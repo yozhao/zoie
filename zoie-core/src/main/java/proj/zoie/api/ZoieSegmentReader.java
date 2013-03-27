@@ -99,6 +99,9 @@ public class ZoieSegmentReader<R extends IndexReader> extends ZoieIndexReader<R>
 		_decoratedReader = (decorator == null ? null : decorator.decorate(this));
 	}
 	
+  /*
+   * this function is only used for ZoieMultiReader.reopen, don't copy deleted doc Id related stuff
+   */	
 	ZoieSegmentReader(ZoieSegmentReader<R> copyFrom,IndexReader innerReader,boolean withDeletes) throws IOException{
 		super(innerReader,copyFrom._decorator);
 		_uidArray = copyFrom._uidArray;
@@ -106,7 +109,6 @@ public class ZoieSegmentReader<R extends IndexReader> extends ZoieIndexReader<R>
 		_minUID = copyFrom._minUID;
 		_noDedup = copyFrom._noDedup;
 		_docIDMapper = copyFrom._docIDMapper;
-		_delDocIdSet = copyFrom._delDocIdSet;
 		
 		if (copyFrom._decorator == null){
 			_decoratedReader = null;
@@ -140,6 +142,10 @@ public class ZoieSegmentReader<R extends IndexReader> extends ZoieIndexReader<R>
     {
       _decoratedReader = copyFrom._decorator.redecorate(copyFrom._decoratedReader, this, this.getDelDocIds()!=null&&this.getDelDocIds().length>0);
     }
+  }
+
+  public SegmentReader getInnerSegmentReader() {
+    return (SegmentReader) in;
   }
 
 	@Override
@@ -342,7 +348,7 @@ public class ZoieSegmentReader<R extends IndexReader> extends ZoieIndexReader<R>
    @Override
   public int numDocs() {
      if (_currentDelDocIds != null) {
-       return super.maxDoc() - _currentDelDocIds.length;
+       return super.numDocs() - _currentDelDocIds.length;
      }  else {
        return super.numDocs();
      }

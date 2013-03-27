@@ -298,16 +298,25 @@ public class ZoieMultiReader<R extends IndexReader> extends ZoieIndexReader<R>
 	    t0 = System.currentTimeMillis() - t0;
 	    if (t0 > 1000)
 	    {
-	      log.info("reopen returns in " + t0 + "ms without change");
+	      log.info("reopen returns in " + t0 + " ms without change");
 	    } else
 	    {
 	      if (log.isDebugEnabled())
 	      {
-	        log.debug("reopen returns in " + t0 + "ms without change");
+	        log.debug("reopen returns in " + t0 + " ms without change");
 	      }
 	    }
 			return this;
 		}
+		
+    long t1 = System.currentTimeMillis() - t0;
+    if (t1 > 1000) {
+      log.info("inner reader reopen returns in " + t1 + "ms with change");
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("inner reader reopen returns in " + t1 + "ms with change");
+      }
+    }
 		
 		IndexReader[] subReaders = inner.getSequentialSubReaders();
 		ArrayList<IndexReader> subReaderList = new ArrayList<IndexReader>(subReaders.length);
@@ -316,7 +325,7 @@ public class ZoieMultiReader<R extends IndexReader> extends ZoieIndexReader<R>
 				SegmentReader sr = (SegmentReader)subReader;
 				String segmentName = sr.getSegmentName();
 				ZoieSegmentReader<R> zoieSegmentReader = _readerMap.get(segmentName);
-				if (zoieSegmentReader!=null){
+				if (zoieSegmentReader != null && zoieSegmentReader.getInnerSegmentReader() == sr){
 					int numDocs = sr.numDocs();
 					int maxDocs = sr.maxDoc();
 					boolean hasDeletes = false;
@@ -331,7 +340,7 @@ public class ZoieMultiReader<R extends IndexReader> extends ZoieIndexReader<R>
 				subReaderList.add(zoieSegmentReader);
 			}
 			else{
-				throw new IllegalStateException("reader not insance of "+SegmentReader.class);
+				throw new IllegalStateException("reader not insance of " + SegmentReader.class);
 			}
 		}
 		ZoieIndexReader<R> ret = newInstance(inner, subReaderList.toArray(new IndexReader[subReaderList.size()]));
