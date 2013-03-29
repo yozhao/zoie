@@ -325,13 +325,13 @@ public class ZoieMultiReader<R extends IndexReader> extends ZoieIndexReader<R>
 				SegmentReader sr = (SegmentReader)subReader;
 				String segmentName = sr.getSegmentName();
 				ZoieSegmentReader<R> zoieSegmentReader = _readerMap.get(segmentName);
-				if (zoieSegmentReader != null && zoieSegmentReader.getInnerSegmentReader() == sr){
+				if (zoieSegmentReader != null){
 					int numDocs = sr.numDocs();
 					int maxDocs = sr.maxDoc();
 					boolean hasDeletes = false;
 					if (zoieSegmentReader.numDocs() != numDocs || zoieSegmentReader.maxDoc() != maxDocs){
 						hasDeletes = true;
-					}
+					}					
 					zoieSegmentReader = new ZoieSegmentReader<R>(zoieSegmentReader,sr,hasDeletes);
 				}
 				else{
